@@ -1,0 +1,6 @@
+install.packages("XML")
+?setwd
+setwd("/home/usersz/Desktop/R")
+getwd
+getwd()
+install.packages("XML")
