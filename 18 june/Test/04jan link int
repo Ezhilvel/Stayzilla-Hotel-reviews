@@ -1,0 +1,90 @@
+--You have 2 tables t1 and t2, each with 2 columns, col1 and col2 and the values shown.
+--Write the select statement that performs a left outer join on col1, joining both tables and retaining all columns.
+--Then, please show the results.
+
+-- INPUT DATA
+-- table t1
+--  col1   col2
+--     1      A
+--     1      A
+--     1      B
+--     2      A
+--     4      C
+--
+-- table t2
+--  col1  col2
+--     1     A
+--     3     B
+--     4     A
+--     4     C
+
+
+Select t1.col1, t1.col2, t2.col1 t2_col1, t2.col2 t2_col2
+
+from t1 left join t2 on t1.col1 = t2.col1;
+
+col1 col2 t2_col1 t2_col2
+1   A   1   A
+1   A   1   A
+1   B   1   A
+2   A   NULL    NULL
+4   C   4   A
+4   C   4   C
+
+
++-----------+-----------+------------+
+| Member_id | Company   | Year_Start |
++-----------+-----------+------------+
+| 1         | Microsoft | 2000       |
+| 1         | Google    | 2006       |
+| 1         | Facebook  | 2012       |
+| 2         | Microsoft | 2001       |
+| 2         | Oracle    | 2004       |
+| 2         | Google    | 2007       |
+| ...       | ...       | ...        |
++-----------+-----------+------------+
+
+Question 1: How many members ever worked at Microsoft prior to working at Google? (both member #1 and member #2 count)
+
+
+Select count(distinct A.Member_id)
+FROM TABLE A LEFT JOIN TABLE B
+ON A.Member_id = B.Member_id 
+where A.Company = 'Microsoft' and B.Company = 'Google' and A.Year_Start < B.Year_Start;
+
+Question 2: How many members moved directly from Microsoft to Google? (Member 2 does not count since Microsoft -> Oracle -> Google)
+
+
+Create table Table_1 as 
+Select A.*, rank() over(Partition by Member_id  Order by Year_Start) Year_rank
+from Table A;
+
+Select count(distinct A.Member_id)
+FROM TABLE_1 A LEFT JOIN TABLE_1 B
+ON A.Member_id = B.Member_id 
+where A.Company = 'Microsoft' and B.Company = 'Google'
+and A.Year_Rank = B.Year_Rank-1 ;
+
+Question 1: How many members ever worked at Microsoft prior to working at Google? (both member #1 and member #2 count)
+
++-----------+-----------+------------+
+| Member_id | Company   | Year_Start |
++-----------+-----------+------------+
+| 1         | Microsoft | 2000       |
+| 1         | Google    | 2006       |
+| 1         | Facebook  | 2012       |
+| 2         | Microsoft | 2001       |
+| 2         | Oracle    | 2004       |
+| 2         | Google    | 2007       |
+| ...       | ...       | ...        |
++-----------+-----------+------------+
+import pandas as pd
+data = pd.DataFrame(Table)
+#renaming columns
+data2 = copy(data)
+data2.rename(columns = {'Member_id':'Member_id_2', 'Company':'Company_2', 'Year_Start': 'Year_Start_2'})
+#joining
+data.merge(data2, how = 'left', left_ob = 'Member_id', right_on ='Member_id_2')
+
+#subset
+data[data['Company'] == 'Microsoft' & data['Company_2'] == 'Google' & data['Year_Start'] < data['Year_Start_2']] 
